@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/my_nav"
+    app:startDestination="@id/viewAssignments">
+
+    <fragment
+        android:id="@+id/viewAssignments"
+        android:name="com.example.a117429464_ca2.viewAssignments"
+        android:label="fragment_view_assignments"
+        tools:layout="@layout/fragment_view_assignments" />
+    <fragment
+        android:id="@+id/addAssignment"
+        android:name="com.example.a117429464_ca2.addAssignment"
+        android:label="fragment_add_assignment"
+        tools:layout="@layout/fragment_add_assignment" />
+    <fragment
+        android:id="@+id/google_sign_in"
+        android:name="com.example.a117429464_ca2.google_sign_in"
+        android:label="fragment_google_sign_in"
+        tools:layout="@layout/fragment_google_sign_in" />
+</navigation>

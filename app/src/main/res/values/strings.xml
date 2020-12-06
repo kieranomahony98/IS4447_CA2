@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">117429464_CA2</string>
+    <string name="create">Create</string>
+    <string name="assignments">Assignments</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="textview">TextView</string>
+    <string name="description">Description</string>
+    <string name="name">Name</string>
+    <string name="completed">Completed</string>
+    <string name="save_changes">Save Changes</string>
+    <string name="delete_assignment">Delete Assignment</string>
+    <string name="assignment_title">Assignment Title</string>
+    <string name="assigment_title">Assigment Title</string>
+    <string name="create_assignment">Create Assignment</string>
+    <string name="add_to_calender">Add To Calender</string>
+    <string name="googlephoto">googlePhoto</string>
+    <string name="assignment_tracker">Assignment Tracker</string>
+    <string name="logo">LOGO</string>
+    <string name="track_assignments_easily">Track Assignments Easily</string>
+    <string-array name="ASSIGNMENT_IMPORTANCE">
+        <item name="Highest">Highest</item>
+        <item name="High">High</item>
+        <item name="Medium">Medium</item>
+        <item name="Low">Low</item>
+        <item name="Lowest">Lowest</item>
+    </string-array>
+    <string-array name="FILTER">
+        <item name="ALL">Show All</item>
+        <item name="COMPLETED">Completed</item>
+        <item name="TODO">To Do</item>
+    </string-array>
+</resources>
