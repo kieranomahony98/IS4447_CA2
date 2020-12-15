@@ -32,15 +32,15 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.MyView
     @Override
     public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_one_line_assignment, parent, false);
-        MyViewHolder myViewHolder = new MyViewHolder(view);
-        return myViewHolder;
+        return new MyViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
         holder.tvTitle.setText(assignments.get(position).getTitle());
         holder.tvDueDate.setText(assignments.get(position).getDueDate());
-        holder.tvCompleted.setText(String.valueOf(assignments.get(position).isCompleted()));
+        String completed = (assignments.get(position).isCompleted()) ? "Completed" : "TODO";
+        holder.tvCompleted.setText(completed);
         holder.tvImportance.setText(assignments.get(position).getImportance());
         holder.tvDescription.setText(assignments.get(position).getDescription());
     }
