@@ -31,15 +31,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         this.context = context;
     }
 
-
     @Override
     public void onCreate(SQLiteDatabase db) {
         try {
-            String createTableStatement = "CREATE TABLE " + ASSIGNMENT_TABLE + COLUMN_ASSIGNMENT_ID + " (INTEGER PRIMARY KEY AUTOINCREMENT, " + COLUMN_ASSIGNMENT_TRACKER_TITLE + " TEXT," +
+            String createTableStatement = "CREATE TABLE " + ASSIGNMENT_TABLE + " ( " + COLUMN_ASSIGNMENT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COLUMN_ASSIGNMENT_TRACKER_TITLE + " TEXT," +
                     COLUMN_ASSIGNMENT_TRACKER_DESCRIPTION + " TEXT, " + COLUMN_ASSIGNMENT_TRACKER_DUEDATE + " TEXT, " +
                     COLUMN_ASSIGNMENT_TRACKER_IMPORTANCE + " TEXT, " + COLUMN_ASSIGNMENT_TRACKER_COMPLETED + " BOOL)";
             db.execSQL(createTableStatement);
-            db.close();
+
         } catch (Exception e) {
             Log.e("Database Error", "Failed to create database" + e.getMessage());
             throw e;
@@ -53,21 +52,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public boolean addAssignment(AssignmentModel assignment) {
-        SQLiteDatabase db = this.getWritableDatabase();
+        SQLiteDatabase dbCheck  = this.getReadableDatabase();
         try{
             String q = "SELECT * FROM " + ASSIGNMENT_TABLE + "WHERE " + COLUMN_ASSIGNMENT_TRACKER_TITLE + "=" + assignment.getTitle();
-            Cursor cursor =  db.rawQuery(q,null);
+            Cursor cursor =  dbCheck.rawQuery(q,null);
             if(cursor.getCount() > 0){
                 Toast.makeText(context, "This Assignment already exists", Toast.LENGTH_SHORT).show();
                 return false;
             }
+
         }catch (SQLException e){
             Log.e("Database Error", "Failed to check if title exists" + e.getMessage());
         }
         try {
-
+            SQLiteDatabase db = this.getWritableDatabase();
             ContentValues cv = new ContentValues();
-
             cv.put(COLUMN_ASSIGNMENT_TRACKER_TITLE, assignment.getTitle());
             cv.put(COLUMN_ASSIGNMENT_TRACKER_DESCRIPTION, assignment.getDescription());
             cv.put(COLUMN_ASSIGNMENT_TRACKER_DUEDATE, assignment.getDueDate());
@@ -75,7 +74,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             cv.put(COLUMN_ASSIGNMENT_TRACKER_COMPLETED, assignment.isCompleted());
 
             long insert = db.insert(ASSIGNMENT_TABLE, null, cv);
-            db.close();
             if (insert == -1) {
                 return false;
             } else {
@@ -96,11 +94,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             Cursor cursor = db.rawQuery(q, null);
             List<AssignmentModel> assignmentModelList = assignmentHelper(cursor);
 
-            cursor.close();
-            db.close();
             return assignmentModelList;
         } catch (Exception e) {
-            Log.e("Database Error:", "Failed to get assignments from the database" + e.getMessage());
+            Log.e("Database Error:", "Failed to get assignments from the database " + e.getMessage());
             throw e;
         }
     }
@@ -126,26 +122,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             Cursor cursor = db.rawQuery(q, null);
             List<AssignmentModel> assignmentModelList = assignmentHelper(cursor);
 
-            cursor.close();
-            db.close();
             return assignmentModelList;
         } catch (Exception e) {
             Log.e("Database Error:", "Failed to get assignments from the database" + e.getMessage());
             throw e;
         }
-    }
-
-    public AssignmentModel getAssignment(String title) {
-
-        SQLiteDatabase db = this.getReadableDatabase();
-        String q = "SELECT * FROM " + ASSIGNMENT_TABLE + " WHERE " + COLUMN_ASSIGNMENT_TRACKER_TITLE + " = ?";
-
-        Cursor cursor = db.rawQuery(q, new String[]{title});
-        if (cursor.moveToFirst()) {
-            return assignmentHelper(cursor).get(0);
-        }
-        return null;
-
     }
 
     private List<AssignmentModel>  assignmentHelper(Cursor cursor){
@@ -169,7 +150,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
             SQLiteDatabase db = this.getWritableDatabase();
             int completed = db.delete(ASSIGNMENT_TABLE, COLUMN_ASSIGNMENT_ID + "=?", new String[]{String.valueOf(id)});
-            db.close();
             if (completed != 1) {
 
                 return false;
@@ -196,7 +176,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             cv.put(COLUMN_ASSIGNMENT_TRACKER_COMPLETED, assignment.isCompleted());
 
             long completed = db.update(ASSIGNMENT_TABLE, cv, "ID = '" + assignment.getId() + "'", null);
-            db.close();
             if(completed != 1){
                 return false;
             }else{
@@ -206,7 +185,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             Log.e("Database Error", "Error Updating Assignment" + e.getMessage());
             throw e;
         }
-
     }
+
+
 
 }

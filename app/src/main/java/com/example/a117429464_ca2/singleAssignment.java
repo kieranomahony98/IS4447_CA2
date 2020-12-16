@@ -1,11 +1,19 @@
 package com.example.a117429464_ca2;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.DefaultItemAnimator;
 
+import android.Manifest;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.CalendarContract;
@@ -25,6 +33,7 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 public class singleAssignment extends AppCompatActivity implements View.OnClickListener {
     DatePicker spDatePicker;
@@ -33,7 +42,7 @@ public class singleAssignment extends AppCompatActivity implements View.OnClickL
     Spinner spImportance;
     Button btnSave, btnDelete, btnAddToCalender;
     AssignmentModel assignment;
-
+    private int WRITE_CALENDER = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +54,8 @@ public class singleAssignment extends AppCompatActivity implements View.OnClickL
         assignment = new Gson().fromJson(getIntent().getExtras().getString("assignment"), AssignmentModel.class);
         if (actionBar != null) {
             actionBar.setTitle(assignment.getTitle());
+            Log.d("ID", String.valueOf(assignment.getId()));
+
         }
 
         populateActivity(assignment);
@@ -58,7 +69,6 @@ public class singleAssignment extends AppCompatActivity implements View.OnClickL
     }
 
     private void populateActivity(AssignmentModel assignment) {
-        int position = getPosition(assignment.getImportance());
         String[] date = formatedDate(assignment.getDueDate());
         spDatePicker.updateDate(Integer.parseInt(date[2]), Integer.parseInt(date[1]) - 1, Integer.parseInt(date[0]));
         etTitle.setText(assignment.getTitle());
@@ -118,7 +128,7 @@ public class singleAssignment extends AppCompatActivity implements View.OnClickL
                     break;
                 case R.id.btnAddToCalender:
                     try {
-                        addtoCalender(title);
+                        checkPermission();
                     } catch (ParseException e) {
                         Log.e("Single Assignment", "Error adding to calender");
                     }
@@ -141,25 +151,73 @@ public class singleAssignment extends AppCompatActivity implements View.OnClickL
     }
     //https://developer.android.com/guide/topics/providers/calendar-provider docs for adding to calender
     @RequiresApi(api = Build.VERSION_CODES.O)
-    private void addtoCalender(String title) throws ParseException {
+    private void addToCalender() throws ParseException {
         google_sign_in sign_in = new google_sign_in();
         if (sign_in.account != null) {
-            DatabaseHelper db = new DatabaseHelper(this);
-            AssignmentModel assignmentModel = db.getAssignment(title);
-            long dateInMillis = new SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH).parse(assignmentModel.getDueDate()).getTime();
-            ContentResolver cr = this.getContentResolver();
-            ContentValues values = new ContentValues();
-            values.put(CalendarContract.Events.DTSTART, dateInMillis);
-            values.put(CalendarContract.Events.DTEND, dateInMillis + 86400000);
-            values.put(CalendarContract.Events.TITLE, assignmentModel.getTitle());
-            values.put(CalendarContract.Events.DESCRIPTION, assignmentModel.getDescription());
-            values.put(CalendarContract.Events.EVENT_TIMEZONE, "EUROPE/DUBLIN");
-            values.put(CalendarContract.Events.CALENDAR_ID, 1);
-            cr.insert(CalendarContract.Events.CONTENT_URI, values);
-            Toast.makeText(this, "Successfully added to your calender", Toast.LENGTH_SHORT).show();
+            try{
+                long dateInMillis = Objects.requireNonNull(new SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH).parse(assignment.getDueDate())).getTime();
+                ContentResolver cr = this.getContentResolver();
+                ContentValues values = new ContentValues();
+                values.put(CalendarContract.Events.DTSTART, dateInMillis);
+                values.put(CalendarContract.Events.DTEND, dateInMillis + 86400000); //one day in milliseconds
+                values.put(CalendarContract.Events.TITLE, assignment.getTitle());
+                values.put(CalendarContract.Events.DESCRIPTION, assignment.getDescription());
+                values.put(CalendarContract.Events.EVENT_TIMEZONE, "EUROPE/DUBLIN");
+                values.put(CalendarContract.Events.CALENDAR_ID, 1);
+                cr.insert(CalendarContract.Events.CONTENT_URI, values);
+                Toast.makeText(this, "Successfully added to your calender", Toast.LENGTH_SHORT).show();
+            }catch (Exception e){
+                Log.e("Calender Error", "Failed to add to calender" + e.getMessage());
+                Toast.makeText(singleAssignment.this, "Failed to add to calender, please try again", Toast.LENGTH_SHORT).show();
+            }
+
         } else {
             Toast.makeText(singleAssignment.this, "Please sign in using the account tab", Toast.LENGTH_SHORT).show();
         }
+    }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void checkPermission() throws ParseException {
+        if(ContextCompat.checkSelfPermission(singleAssignment.this, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED){
+            addToCalender();
+        }else{
+            requestCalenderPermission();
+        }
+    }
+
+    private void requestCalenderPermission() {
+        if(ActivityCompat.shouldShowRequestPermissionRationale(singleAssignment.this,Manifest.permission.WRITE_CALENDAR )){
+            new AlertDialog.Builder(singleAssignment.this)
+                    .setTitle("Calender Permission")
+                    .setMessage("This is required to write to your calender")
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            ActivityCompat.requestPermissions(singleAssignment.this, new String[]{Manifest.permission.WRITE_CALENDAR}, WRITE_CALENDER );
+                        }
+                    })
+                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            }).create().show();
+        }else {
+            ActivityCompat.requestPermissions(singleAssignment.this, new String[]{Manifest.permission.WRITE_CALENDAR}, WRITE_CALENDER );
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if(requestCode == WRITE_CALENDER){
+            if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                try {
+                    addToCalender();
+                } catch (ParseException e) {
+                    Log.e("Request Permission", "Error in Permissions: " + e.getMessage());
+                }
+            }
+        }
     }
 }

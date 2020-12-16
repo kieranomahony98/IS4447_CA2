@@ -21,12 +21,6 @@ import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link viewAssignments#
- * } factory method to
- * create an instance of this fragment.
- */
 public class viewAssignments extends Fragment implements AdapterView.OnItemSelectedListener {
     List<AssignmentModel> assignmentModels = new ArrayList<AssignmentModel>();
     private RecyclerView recyclerView;
@@ -50,15 +44,12 @@ public class viewAssignments extends Fragment implements AdapterView.OnItemSelec
     private View.OnClickListener onItemClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-
             RecyclerView.ViewHolder viewHolder = (RecyclerView.ViewHolder) view.getTag();
             int position = viewHolder.getAdapterPosition();
             Intent singleAssignment = new Intent(getActivity(), singleAssignment.class);
-
             String convertedAssignment = new Gson().toJson(assignmentModels.get(position));
             singleAssignment.putExtra("assignment", convertedAssignment);
             startActivity(singleAssignment);
-
         }
     };
 
@@ -67,7 +58,7 @@ public class viewAssignments extends Fragment implements AdapterView.OnItemSelec
         try {
             super.onResume();
             DatabaseHelper db = new DatabaseHelper(this.getContext());
-            assignmentModels = db.getAssignments();
+//            assignmentModels = db.getAssignments();
             createRecylerView();
         } catch (Exception e) {
             Log.e("View Assignments", "Error on Resume" + e.getMessage());
