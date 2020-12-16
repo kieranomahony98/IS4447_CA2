@@ -7,7 +7,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.DefaultItemAnimator;
 
 import android.Manifest;
 import android.content.ContentResolver;
@@ -51,11 +50,9 @@ public class singleAssignment extends AppCompatActivity implements View.OnClickL
         attachResources();
         ActionBar actionBar = getSupportActionBar();
 
-        assignment = new Gson().fromJson(getIntent().getExtras().getString("assignment"), AssignmentModel.class);
+        assignment = new Gson().fromJson(Objects.requireNonNull(getIntent().getExtras()).getString("assignment"), AssignmentModel.class);
         if (actionBar != null) {
             actionBar.setTitle(assignment.getTitle());
-            Log.d("ID", String.valueOf(assignment.getId()));
-
         }
 
         populateActivity(assignment);
@@ -73,11 +70,28 @@ public class singleAssignment extends AppCompatActivity implements View.OnClickL
         spDatePicker.updateDate(Integer.parseInt(date[2]), Integer.parseInt(date[1]) - 1, Integer.parseInt(date[0]));
         etTitle.setText(assignment.getTitle());
         etmlDescription.setText(assignment.getDescription());
-        spImportance.setSelection(getPosition(assignment.getImportance()));
+        int importance = getPosition(assignment.getImportance());
+        if(importance != -1){
+            spImportance.setSelection(getPosition(assignment.getImportance()));
+        }
+        cbCompleted.setChecked(assignment.isCompleted());
+
+
     }
 
     private int getPosition(String importance) {
-        return mImportance.get(importance);
+        try{
+            Integer i = mImportance.get(importance);
+            if(i != null){
+                return i;
+            }else{
+                Toast.makeText(singleAssignment.this, "Failed to find importance", Toast.LENGTH_SHORT).show();
+            }
+        }catch (NullPointerException e){
+            Log.e("Single Assignment", "Failed to get importance: " + e.getMessage());
+        }
+        return -1;
+
     }
 
     public static Map<String, Integer> mImportance = new HashMap<String, Integer>() {
@@ -88,8 +102,6 @@ public class singleAssignment extends AppCompatActivity implements View.OnClickL
             put("Low", 3);
             put("Lowest", 4);
         }
-
-        ;
     };
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -99,7 +111,7 @@ public class singleAssignment extends AppCompatActivity implements View.OnClickL
         String description = etmlDescription.getText().toString();
         String importance = spImportance.getSelectedItem().toString();
         String duedate = (spDatePicker.getDayOfMonth()) + "/" + (spDatePicker.getMonth() + 1) + "/" + spDatePicker.getYear();
-        Boolean completed = cbCompleted.isChecked();
+        boolean completed = cbCompleted.isChecked();
         if (!title.matches("") && !description.matches("")) {
             int id = assignment.getId();
             switch (v.getId()) {
@@ -107,7 +119,7 @@ public class singleAssignment extends AppCompatActivity implements View.OnClickL
                     DatabaseHelper db = new DatabaseHelper(v.getContext());
 
                     AssignmentModel assignment = new AssignmentModel(id, title, importance, duedate, description, completed);
-                    Boolean updated = db.updateAssignment(assignment);
+                    boolean updated = db.updateAssignment(assignment);
                     if (updated) {
                         Toast.makeText(this, "Updated Successfully", Toast.LENGTH_SHORT).show();
                         break;
@@ -119,9 +131,10 @@ public class singleAssignment extends AppCompatActivity implements View.OnClickL
 
                 case R.id.btnDelete:
                     DatabaseHelper deleteDb = new DatabaseHelper(v.getContext());
-                    Boolean deleted =  deleteDb.deleteAssignments(id);
+                    boolean deleted =  deleteDb.deleteAssignments(id);
                     if(deleted){
                         Toast.makeText(this, "Deleted Successfully", Toast.LENGTH_SHORT).show();
+                        finish();
                     }else {
                         Toast.makeText(this, "Failed to delete assignment", Toast.LENGTH_SHORT).show();
                     }
@@ -129,8 +142,8 @@ public class singleAssignment extends AppCompatActivity implements View.OnClickL
                 case R.id.btnAddToCalender:
                     try {
                         checkPermission();
-                    } catch (ParseException e) {
-                        Log.e("Single Assignment", "Error adding to calender");
+                    } catch (Exception e) {
+                        Log.e("Single Assignment", "Error adding to calender: " + e.getMessage());
                     }
             }
         } else {
@@ -151,10 +164,10 @@ public class singleAssignment extends AppCompatActivity implements View.OnClickL
     }
     //https://developer.android.com/guide/topics/providers/calendar-provider docs for adding to calender
     @RequiresApi(api = Build.VERSION_CODES.O)
-    private void addToCalender() throws ParseException {
-        google_sign_in sign_in = new google_sign_in();
-        if (sign_in.account != null) {
+    private void addToCalender()  {
+        if (google_sign_in.account != null) {
             try{
+
                 long dateInMillis = Objects.requireNonNull(new SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH).parse(assignment.getDueDate())).getTime();
                 ContentResolver cr = this.getContentResolver();
                 ContentValues values = new ContentValues();
@@ -165,6 +178,7 @@ public class singleAssignment extends AppCompatActivity implements View.OnClickL
                 values.put(CalendarContract.Events.EVENT_TIMEZONE, "EUROPE/DUBLIN");
                 values.put(CalendarContract.Events.CALENDAR_ID, 1);
                 cr.insert(CalendarContract.Events.CONTENT_URI, values);
+
                 Toast.makeText(this, "Successfully added to your calender", Toast.LENGTH_SHORT).show();
             }catch (Exception e){
                 Log.e("Calender Error", "Failed to add to calender" + e.getMessage());
@@ -177,7 +191,7 @@ public class singleAssignment extends AppCompatActivity implements View.OnClickL
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    private void checkPermission() throws ParseException {
+    private void checkPermission() {
         if(ContextCompat.checkSelfPermission(singleAssignment.this, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED){
             addToCalender();
         }else{
@@ -214,7 +228,7 @@ public class singleAssignment extends AppCompatActivity implements View.OnClickL
             if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
                 try {
                     addToCalender();
-                } catch (ParseException e) {
+                } catch (Exception e) {
                     Log.e("Request Permission", "Error in Permissions: " + e.getMessage());
                 }
             }

@@ -54,13 +54,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public boolean addAssignment(AssignmentModel assignment) {
         SQLiteDatabase dbCheck  = this.getReadableDatabase();
         try{
-            String q = "SELECT * FROM " + ASSIGNMENT_TABLE + "WHERE " + COLUMN_ASSIGNMENT_TRACKER_TITLE + "=" + assignment.getTitle();
-            Cursor cursor =  dbCheck.rawQuery(q,null);
+            String q = "SELECT * FROM " + ASSIGNMENT_TABLE + " WHERE " + COLUMN_ASSIGNMENT_TRACKER_TITLE + "= ?" ;
+            Cursor cursor =  dbCheck.rawQuery(q,new String[]{assignment.getTitle()});
             if(cursor.getCount() > 0){
                 Toast.makeText(context, "This Assignment already exists", Toast.LENGTH_SHORT).show();
                 return false;
             }
-
+        cursor.close();
         }catch (SQLException e){
             Log.e("Database Error", "Failed to check if title exists" + e.getMessage());
         }
@@ -74,11 +74,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             cv.put(COLUMN_ASSIGNMENT_TRACKER_COMPLETED, assignment.isCompleted());
 
             long insert = db.insert(ASSIGNMENT_TABLE, null, cv);
-            if (insert == -1) {
-                return false;
-            } else {
-                return true;
-            }
+            return insert != -1;
         } catch (Exception e) {
             Log.e("Database Error", "Failed to add to the database" + e.getMessage());
             throw e;
@@ -92,9 +88,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             SQLiteDatabase db = this.getReadableDatabase();
 
             Cursor cursor = db.rawQuery(q, null);
-            List<AssignmentModel> assignmentModelList = assignmentHelper(cursor);
 
-            return assignmentModelList;
+            return assignmentHelper(cursor);
         } catch (Exception e) {
             Log.e("Database Error:", "Failed to get assignments from the database " + e.getMessage());
             throw e;
@@ -120,9 +115,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             SQLiteDatabase db = this.getReadableDatabase();
 
             Cursor cursor = db.rawQuery(q, null);
-            List<AssignmentModel> assignmentModelList = assignmentHelper(cursor);
 
-            return assignmentModelList;
+            return assignmentHelper(cursor);
         } catch (Exception e) {
             Log.e("Database Error:", "Failed to get assignments from the database" + e.getMessage());
             throw e;
@@ -130,7 +124,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     private List<AssignmentModel>  assignmentHelper(Cursor cursor){
-        List<AssignmentModel> assignmentModelList = new ArrayList<AssignmentModel>();
+        List<AssignmentModel> assignmentModelList = new ArrayList<>();
 
         while (cursor.moveToNext()) {
             int assingmentId = cursor.getInt(0);
@@ -138,7 +132,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             String assingmentDescription = cursor.getString(2);
             String assingmentDueDate = cursor.getString(3);
             String assingmentImportance = cursor.getString(4);
-            Boolean assingmentCompleted = cursor.getInt(5) == (1) ? true : false;
+            boolean assingmentCompleted = cursor.getInt(5) == (1);
             assignmentModelList.add(new AssignmentModel(assingmentId, assingmentTitle, assingmentImportance, assingmentDueDate, assingmentDescription, assingmentCompleted));
         }
 
@@ -150,12 +144,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
             SQLiteDatabase db = this.getWritableDatabase();
             int completed = db.delete(ASSIGNMENT_TABLE, COLUMN_ASSIGNMENT_ID + "=?", new String[]{String.valueOf(id)});
-            if (completed != 1) {
-
-                return false;
-            } else {
-                return true;
-            }
+            return completed == 1;
         } catch (Exception e) {
             Log.e("Database error:", "Failed to delete assignment" + e.getMessage());
             throw e;
@@ -176,11 +165,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             cv.put(COLUMN_ASSIGNMENT_TRACKER_COMPLETED, assignment.isCompleted());
 
             long completed = db.update(ASSIGNMENT_TABLE, cv, "ID = '" + assignment.getId() + "'", null);
-            if(completed != 1){
-                return false;
-            }else{
-                return true;
-            }
+            return completed == 1;
         }catch (Exception e){
             Log.e("Database Error", "Error Updating Assignment" + e.getMessage());
             throw e;

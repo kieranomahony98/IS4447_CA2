@@ -20,25 +20,32 @@ import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class viewAssignments extends Fragment implements AdapterView.OnItemSelectedListener {
-    List<AssignmentModel> assignmentModels = new ArrayList<AssignmentModel>();
+    List<AssignmentModel> assignmentModels = new ArrayList<>();
     private RecyclerView recyclerView;
     private RecyclerView.LayoutManager layoutManager;
     private Spinner spFilter;
-    private boolean isVisible = false;
     RecyclerAdapter rAdapter;
 
-    @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_view_assignments, container, false);
-        recyclerView = v.findViewById(R.id.rvAssignments);
-        ActionBar actionBar = ((MainActivity) getActivity()).getSupportActionBar();
-        actionBar.setTitle("View Assignments");
-        spFilter = v.findViewById(R.id.spFilter);
-        spFilter.setOnItemSelectedListener(this);
-        return v;
+        try{
+            View v = inflater.inflate(R.layout.fragment_view_assignments, container, false);
+            recyclerView = v.findViewById(R.id.rvAssignments);
+
+            ActionBar actionBar = ((MainActivity) requireActivity()).getSupportActionBar();
+
+            assert actionBar != null;
+            actionBar.setTitle("View Assignments");
+            spFilter = v.findViewById(R.id.spFilter);
+            spFilter.setOnItemSelectedListener(this);
+            return v;
+        }catch (Exception e){
+            Log.e("View Assignments", "Failed to create view: " +  e.getMessage());
+        }
+        return null;
     }
 
     private View.OnClickListener onItemClickListener = new View.OnClickListener() {
@@ -58,7 +65,7 @@ public class viewAssignments extends Fragment implements AdapterView.OnItemSelec
         try {
             super.onResume();
             DatabaseHelper db = new DatabaseHelper(this.getContext());
-//            assignmentModels = db.getAssignments();
+            assignmentModels = db.getAssignments();
             createRecylerView();
         } catch (Exception e) {
             Log.e("View Assignments", "Error on Resume" + e.getMessage());
