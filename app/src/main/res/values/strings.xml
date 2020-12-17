@@ -18,6 +18,7 @@
     <string name="assignment_tracker">Assignment Tracker</string>
     <string name="logo">LOGO</string>
     <string name="track_assignments_easily">Track Assignments Easily</string>
+    <string name="imgdesc">tracking logo</string>
     <string-array name="ASSIGNMENT_IMPORTANCE">
         <item name="Highest">Highest</item>
         <item name="High">High</item>
@@ -30,4 +31,11 @@
         <item name="COMPLETED">Completed</item>
         <item name="TODO">To Do</item>
     </string-array>
+    <string name="next">NEXT</string>
+    <string name="skip">SKIP</string>
+    <string name="google_calender">Google Calender</string>
+    <string name="google_calender_desc">You can add assignments to your calender within the applicaition to easily see when they\'re due from any device!</string>
+    <string name="appdesc">Create new assignments and update them within our app! You can also mark assignments as completed and only view which ones you need to do!</string>
+
+
 </resources>

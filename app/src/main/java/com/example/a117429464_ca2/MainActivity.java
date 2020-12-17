@@ -39,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
         Menu menu = bottomNavigationView.getMenu();
         NavController navController = Navigation.findNavController(this, R.id.fragment);
         NavigationUI.setupWithNavController(bottomNavigationView, navController);
+
+
     }
 
     @Override
@@ -48,6 +50,33 @@ public class MainActivity extends AppCompatActivity {
 
     public void setActionTitle(){
         ActionBar actionBar = getSupportActionBar();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        DatabaseHelper.getInstance(this).closeInstances();
+        super.onPause();
 
     }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+    }
+
 }

@@ -64,7 +64,7 @@ public class viewAssignments extends Fragment implements AdapterView.OnItemSelec
     public void onResume() {
         try {
             super.onResume();
-            DatabaseHelper db = new DatabaseHelper(this.getContext());
+            DatabaseHelper db = DatabaseHelper.getInstance(this.getContext());
             assignmentModels = db.getAssignments();
             createRecylerView();
         } catch (Exception e) {
@@ -90,7 +90,7 @@ public class viewAssignments extends Fragment implements AdapterView.OnItemSelec
     }
 
     public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-        DatabaseHelper db = new DatabaseHelper(this.getContext());
+        DatabaseHelper db = DatabaseHelper.getInstance(this.getContext());
         assignmentModels = spFilter.getItemAtPosition(pos) == "ALL" ? db.getAssignments() : db.getAssignments(String.valueOf(spFilter.getItemAtPosition(pos)));
         rAdapter.notifyDataSetChanged();
         createRecylerView();

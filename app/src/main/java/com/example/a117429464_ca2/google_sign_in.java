@@ -164,4 +164,5 @@ public class google_sign_in extends Fragment implements View.OnClickListener {
         ivProfilePic = v.findViewById(R.id.ivProfilepic);
         tvName = v.findViewById(R.id.tvName);
     }
+
 }

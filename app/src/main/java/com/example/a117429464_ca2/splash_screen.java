@@ -36,7 +36,6 @@ public class splash_screen extends AppCompatActivity {
                finish();
             }
         }, duration);
-
     }
 
     private void attachAnimations(Animation topAnim, Animation bottomAnim) {

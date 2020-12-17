@@ -68,7 +68,7 @@ public class addAssignment extends Fragment {
         if(isValidated == true){
             AssignmentModel newAssignment = new AssignmentModel(-1, title, importance, duedate, description, false);
 
-            DatabaseHelper db = new DatabaseHelper(this.getContext());
+            DatabaseHelper db =  DatabaseHelper.getInstance(this.getContext());
             boolean isAdded = db.addAssignment(newAssignment);
             return isAdded;
         }
